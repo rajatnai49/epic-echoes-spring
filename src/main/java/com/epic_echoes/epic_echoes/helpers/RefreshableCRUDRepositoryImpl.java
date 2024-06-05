@@ -1,0 +1,38 @@
+package com.epic_echoes.epic_echoes.helpers;
+
+import jakarta.persistence.EntityManager;
+import org.springframework.data.jpa.repository.support.JpaEntityInformation;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collection;
+
+public class RefreshableCRUDRepositoryImpl<T, ID> extends SimpleJpaRepository<T, ID> implements RefreshableCRUDRepository<T, ID> {
+
+    private final EntityManager entityManager;
+
+    public RefreshableCRUDRepositoryImpl(JpaEntityInformation<T, ?> entityInformation, EntityManager entityManager) {
+        super(entityInformation, entityManager);
+        this.entityManager = entityManager;
+    }
+
+    @Override
+    @Transactional
+    public void flush() {
+        entityManager.flush();
+    }
+
+    @Override
+    @Transactional
+    public void refresh(T t) {
+        entityManager.refresh(t);
+    }
+
+    @Override
+    @Transactional
+    public void refresh(Collection<T> s) {
+        for (T t : s) {
+            entityManager.refresh(t);
+        }
+    }
+}
