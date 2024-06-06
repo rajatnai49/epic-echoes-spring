@@ -17,7 +17,12 @@ public class UserServiceImpl implements UserService {
     @Autowired
     UserRepository userRepository;
 
-    ModelMapper modelMapper = new ModelMapper();
+    private final ModelMapper modelMapper;
+
+    @Autowired
+    public UserServiceImpl(ModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
+    }
 
     @Override
     public UserResponse saveUser(UserRequest userRequest) {
@@ -49,7 +54,6 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException("Can't find record with identifier: " + userRequest.getId());
             }
         } else {
-//            user.setCreatedBy(currentUser);
             savedUser = userRepository.save(user);
         }
         userRepository.refresh(savedUser);

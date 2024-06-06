@@ -7,7 +7,6 @@ import com.epic_echoes.epic_echoes.services.RefreshTokenService;
 import com.epic_echoes.epic_echoes.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,7 +33,6 @@ public class UserController {
 
     @PostMapping(value = "/save")
     public ResponseEntity saveUser(@RequestBody UserRequest userRequest) {
-        System.out.println("Hey Ninja"+"\n"+"Welcome");
         try {
             UserResponse userResponse = userService.saveUser(userRequest);
             return ResponseEntity.ok(userResponse);
@@ -54,7 +52,7 @@ public class UserController {
     }
 
 
-    @PostMapping("/profile")
+    @GetMapping("/profile")
     public ResponseEntity<UserResponse> getUserProfile() {
         try {
             UserResponse userResponse = userService.getUser();
@@ -64,7 +62,6 @@ public class UserController {
         }
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping("/test")
     public String test() {
         try {

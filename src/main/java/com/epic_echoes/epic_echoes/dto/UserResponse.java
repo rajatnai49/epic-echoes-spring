@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -14,7 +15,7 @@ import java.util.Set;
 @ToString
 public class UserResponse {
 
-    private Long id;
+    private UUID id;
     private String username;
     private Set<UserRole> roles;
 
