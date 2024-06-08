@@ -73,31 +73,49 @@ public class UserController {
 
     @PostMapping("/login")
     public JwtResponseDTO AuthenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO){
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(), authRequestDTO.getPassword()));
-        if(authentication.isAuthenticated()){
+        System.out.println("Authenticating user: " + authRequestDTO.getUsername());
+        Authentication authentication = null;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(), authRequestDTO.getPassword()));
+            System.out.println("Authentication object: " + authentication);
+        } catch (Exception e) {
+            System.out.println("Authentication failed for user: " + authRequestDTO.getUsername());
+            e.printStackTrace();
+            throw new UsernameNotFoundException("Invalid user request..!!");
+        }
+
+        if (authentication.isAuthenticated()) {
+            System.out.println("User authenticated: " + authRequestDTO.getUsername());
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(authRequestDTO.getUsername());
+            System.out.println("Generated refresh token: " + refreshToken.getToken());
+
             return JwtResponseDTO.builder()
                     .accessToken(jwtService.GenerateToken(authRequestDTO.getUsername()))
                     .token(refreshToken.getToken()).build();
-
         } else {
-            throw new UsernameNotFoundException("invalid user request..!!");
+            System.out.println("Invalid user request: " + authRequestDTO.getUsername());
+            throw new UsernameNotFoundException("Invalid user request..!!");
         }
-
     }
+
 
     @PostMapping("/refreshToken")
     public JwtResponseDTO refreshToken(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO){
-        return refreshTokenService.findByToken(refreshTokenRequestDTO.getToken())
+        String token = refreshTokenRequestDTO.getToken().trim();
+        System.out.println("Token Received: " + token);
+
+        return refreshTokenService.findByToken(token)
                 .map(refreshTokenService::verifyExpiration)
                 .map(RefreshToken::getUserInfo)
                 .map(userInfo -> {
                     String accessToken = jwtService.GenerateToken(userInfo.getUsername());
                     return JwtResponseDTO.builder()
                             .accessToken(accessToken)
-                            .token(refreshTokenRequestDTO.getToken()).build();
-                }).orElseThrow(() ->new RuntimeException("Refresh Token is not in DB..!!"));
+                            .token(token).build();
+                }).orElseThrow(() -> new RuntimeException("Refresh Token is not in DB..!!"));
     }
+
 
 
 

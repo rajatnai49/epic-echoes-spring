@@ -33,19 +33,20 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf().disable()
+        http.csrf().disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/v1/save", "/api/v1/login", "/api/v1/refreshToken").permitAll()
+                .requestMatchers("/api/v1/save", "/api/v1/login", "/api/v1/refreshToken", "/websocket/**").permitAll()
+                .anyRequest().authenticated()
                 .and()
-                .authorizeHttpRequests().requestMatchers("/api/v1/**")
-                .authenticated()
+                .cors()
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
     }
 
     @Bean

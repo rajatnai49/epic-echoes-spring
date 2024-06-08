@@ -41,8 +41,13 @@ public class RefreshTokenService {
     }
 
     public Optional<RefreshToken> findByToken(String token){
-        return refreshTokenRepository.findByToken(token);
+        String trimmedToken = token.trim();
+        System.out.println("Find Token:" + trimmedToken);
+        Optional<RefreshToken> temp = refreshTokenRepository.findByToken(trimmedToken);
+        System.out.println("Refresh" + temp);
+        return temp;
     }
+
 
     public RefreshToken verifyExpiration(RefreshToken token){
         if(token.getExpiryDate().compareTo(Instant.now())<0){
