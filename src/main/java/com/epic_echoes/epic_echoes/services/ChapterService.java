@@ -11,7 +11,7 @@ public interface ChapterService {
     ChapterDTO getChapterById(UUID id);
     ChapterDTO createChapter(ChapterDTO chapterDTO);
     ChapterDTO updateChapter(UUID id, ChapterDTO chapterDTO);
-    void deleteChapter(UUID id);
+    boolean deleteChapter(UUID id);
     ChapterDTO upvoteChapter(VoteRequest voteRequest);
     ChapterDTO downvoteChapter(VoteRequest voteRequest);
 }

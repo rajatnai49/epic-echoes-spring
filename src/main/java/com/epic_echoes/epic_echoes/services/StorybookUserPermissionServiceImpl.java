@@ -6,13 +6,14 @@ import com.epic_echoes.epic_echoes.repositories.StorybookUserPermissionRepositor
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class StorybookUserPermissionServiceImpl implements  StorybookUserPermissionService{
+public class StorybookUserPermissionServiceImpl implements StorybookUserPermissionService {
 
     private final StorybookUserPermissionRepository permissionRepository;
     private final ModelMapper modelMapper;
@@ -39,9 +40,10 @@ public class StorybookUserPermissionServiceImpl implements  StorybookUserPermiss
     public StorybookUserPermissionDTO createPermission(StorybookUserPermissionDTO permissionDTO) {
         StorybookUserPermission permission = modelMapper.map(permissionDTO, StorybookUserPermission.class);
         StorybookUserPermission savedPermission = permissionRepository.save(permission);
-        return modelMapper.map(permission, StorybookUserPermissionDTO.class);
+        return modelMapper.map(savedPermission, StorybookUserPermissionDTO.class);
     }
 
+    @Transactional
     public StorybookUserPermissionDTO updatePermission(UUID id, StorybookUserPermissionDTO permissionDTO) {
         StorybookUserPermission existingPermission = permissionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Permission not found"));
@@ -50,4 +52,13 @@ public class StorybookUserPermissionServiceImpl implements  StorybookUserPermiss
         return modelMapper.map(updatedPermission, StorybookUserPermissionDTO.class);
     }
 
+    @Transactional
+    public boolean deletePermission(UUID id) {
+        if (permissionRepository.existsById(id)) {
+            permissionRepository.deleteById(id);
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

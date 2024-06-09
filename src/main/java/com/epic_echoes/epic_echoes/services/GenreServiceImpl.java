@@ -30,6 +30,11 @@ public class GenreServiceImpl implements GenreService {
                 .collect(Collectors.toList());
     }
 
+    public List<Genre> findGenresByName(List<String> genreNames) {
+        List<String> lowerCaseNames = genreNames.stream().map(String::toLowerCase).collect(Collectors.toList());
+        return genreRepository.findByNameIn(lowerCaseNames);
+    }
+
     private Genre findOrCreateGenre(GenreDTO genreDTO) {
         String genreName = genreDTO.getName().toLowerCase();
         Optional<Genre> existingGenre = genreRepository.findByName(genreName);

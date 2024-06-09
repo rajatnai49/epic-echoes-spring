@@ -48,8 +48,13 @@ public class ChapterController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteChapter(@PathVariable UUID id) {
-        chapterService.deleteChapter(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        boolean isDeleted = chapterService.deleteChapter(id);
+        if(isDeleted) {
+            return ResponseEntity.noContent().build();
+        }
+        else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/upvote")

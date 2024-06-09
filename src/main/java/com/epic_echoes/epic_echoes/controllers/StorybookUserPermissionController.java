@@ -2,7 +2,6 @@ package com.epic_echoes.epic_echoes.controllers;
 
 import com.epic_echoes.epic_echoes.dto.StorybookUserPermissionDTO;
 import com.epic_echoes.epic_echoes.services.StorybookUserPermissionService;
-import com.epic_echoes.epic_echoes.services.StorybookUserPermissionServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,10 +13,10 @@ import java.util.UUID;
 @RequestMapping("/api/v1/permissions")
 public class StorybookUserPermissionController {
 
-    private final StorybookUserPermissionServiceImpl permissionService;
+    private final StorybookUserPermissionService permissionService;
 
     @Autowired
-    public StorybookUserPermissionController(StorybookUserPermissionServiceImpl permissionService) {
+    public StorybookUserPermissionController(StorybookUserPermissionService permissionService) {
         this.permissionService = permissionService;
     }
 
@@ -37,5 +36,21 @@ public class StorybookUserPermissionController {
     public ResponseEntity<StorybookUserPermissionDTO> createPermission(@RequestBody StorybookUserPermissionDTO permissionDTO) {
         StorybookUserPermissionDTO createdPermission = permissionService.createPermission(permissionDTO);
         return ResponseEntity.ok(createdPermission);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<StorybookUserPermissionDTO> updatePermission(@PathVariable UUID id, @RequestBody StorybookUserPermissionDTO permissionDTO) {
+        StorybookUserPermissionDTO updatedPermission = permissionService.updatePermission(id, permissionDTO);
+        return ResponseEntity.ok(updatedPermission);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePermission(@PathVariable UUID id) {
+        boolean isDeleted = permissionService.deletePermission(id);
+        if (isDeleted) {
+            return ResponseEntity.noContent().build(); // 204 No Content
+        } else {
+            return ResponseEntity.notFound().build(); // 404 Not Found
+        }
     }
 }

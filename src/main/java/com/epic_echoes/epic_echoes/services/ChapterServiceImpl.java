@@ -13,6 +13,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -46,7 +47,7 @@ public class ChapterServiceImpl implements ChapterService {
     @Override
     public List<ChapterDTO> getAllChapters() {
         return chapterRepository.findAll().stream()
-                .map(this::convertToDto)
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -54,7 +55,7 @@ public class ChapterServiceImpl implements ChapterService {
     public ChapterDTO getChapterById(UUID id) {
         Chapter chapter = chapterRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Chapter not found"));
-        return convertToDto(chapter);
+        return convertToDTO(chapter);
     }
 
     @Override
@@ -63,7 +64,7 @@ public class ChapterServiceImpl implements ChapterService {
         chapter.setStorybook(storybookRepository.findById(chapterDTO.getStorybookId())
                 .orElseThrow(() -> new RuntimeException("Storybook not found")));
         Chapter savedChapter = chapterRepository.save(chapter);
-        return convertToDto(savedChapter);
+        return convertToDTO(savedChapter);
     }
 
     @Override
@@ -77,14 +78,18 @@ public class ChapterServiceImpl implements ChapterService {
                 .orElseThrow(() -> new RuntimeException("Storybook not found")));
 
         Chapter updatedChapter = chapterRepository.save(existingChapter);
-        return convertToDto(updatedChapter);
+        return convertToDTO(updatedChapter);
     }
 
     @Override
-    public void deleteChapter(UUID id) {
-        Chapter chapter = chapterRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Chapter not found"));
-        chapterRepository.delete(chapter);
+    public boolean deleteChapter(UUID id) {
+        if(chapterRepository.existsById(id)) {
+            chapterRepository.deleteById(id);
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     @Override
@@ -110,7 +115,7 @@ public class ChapterServiceImpl implements ChapterService {
         }
 
         Chapter updatedChapter = chapterRepository.save(chapter);
-        ChapterDTO chapterDTO = convertToDto(updatedChapter);
+        ChapterDTO chapterDTO = convertToDTO(updatedChapter);
 
         messagingTemplate.convertAndSend("/topic/updates", chapterDTO);
         return chapterDTO;
@@ -138,12 +143,20 @@ public class ChapterServiceImpl implements ChapterService {
         }
 
         Chapter updatedChapter = chapterRepository.save(chapter);
-        ChapterDTO chapterDTO = convertToDto(updatedChapter);
+        ChapterDTO chapterDTO = convertToDTO(updatedChapter);
         messagingTemplate.convertAndSend("/topic/updates", chapterDTO);
         return chapterDTO;
     }
 
-    private ChapterDTO convertToDto(Chapter chapter) {
+    @Transactional(readOnly = true)
+    public List<ChapterDTO> getChaptersByStorybookIdAndNumber(UUID id, Integer number) {
+        List<Chapter> chapters = chapterRepository.findChaptersByStorybookIdAndNumber(id, number);
+        return chapters.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private ChapterDTO convertToDTO(Chapter chapter) {
         ChapterDTO chapterDTO = modelMapper.map(chapter, ChapterDTO.class);
         if (chapterDTO.getUpVotes() == null) {
             chapterDTO.setUpVotes(0L);
