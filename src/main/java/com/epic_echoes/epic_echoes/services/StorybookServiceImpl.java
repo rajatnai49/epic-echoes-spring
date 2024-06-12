@@ -39,7 +39,7 @@ public class StorybookServiceImpl implements StorybookService {
     public List<StorybookDTO> getAllStorybooks() {
         List<Storybook> storybooks = storybookRepository.findAll();
         return storybooks.stream()
-                .map(this::convertToDto)
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -48,27 +48,30 @@ public class StorybookServiceImpl implements StorybookService {
     public StorybookDTO getStorybookById(UUID id) {
         Storybook storybook = storybookRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Storybook not found"));
-        return convertToDto(storybook);
+        return convertToDTO(storybook);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<ChapterDTO> getChaptersByStorybookId(UUID id) {
         StorybookDTO storybookDTO = getStorybookById(id);
         return storybookDTO.getChapters();
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<StorybookDTO> getStorybooksByUserId(UUID id) {
         List<Storybook> storybooks = storybookRepository.findByUserId(id);
-        return storybooks.stream().map(this::convertToDto)
+        return storybooks.stream().map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<StorybookDTO> getStorybooksByGenres(List<UUID> genreIds) {
         List<Storybook> storybooks = storybookRepository.findByGenres(genreIds);
         return storybooks.stream()
-                .map(this::convertToDto)
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -76,12 +79,18 @@ public class StorybookServiceImpl implements StorybookService {
     @Transactional
     public StorybookDTO createStorybook(StorybookDTO storybookDTO) {
         Storybook storybook = convertToEntity(storybookDTO);
+        if (storybook == null) {
+            throw new IllegalArgumentException("Converted Storybook entity cannot be null");
+        }
+        System.out.println(storybook);
         UserInfo user = userRepository.findById(storybookDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         storybook.setUser(user);
         Storybook savedStorybook = storybookRepository.save(storybook);
-        return convertToDto(savedStorybook);
+        System.out.println(savedStorybook);
+        return convertToDTO(savedStorybook);
     }
+
 
     @Override
     @Transactional
@@ -101,9 +110,11 @@ public class StorybookServiceImpl implements StorybookService {
         existingStorybook.setGenres(genres);
 
         Storybook updatedStorybook = storybookRepository.save(existingStorybook);
-        return convertToDto(updatedStorybook);
+        return convertToDTO(updatedStorybook);
     }
 
+
+    @Override
     @Transactional
     public StorybookDTO updatePrivacyById(UUID id, String privacy) {
         Optional<Storybook> optionalStorybook = storybookRepository.findById(id);
@@ -113,7 +124,7 @@ public class StorybookServiceImpl implements StorybookService {
                 Storybook.Privacy privacyEnum = Storybook.Privacy.valueOf(privacy);
                 storybook.setPrivacy(privacyEnum);
                 storybook = storybookRepository.save(storybook);
-                return convertToDto(storybook);
+                return convertToDTO(storybook);
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Invalid privacy value: " + privacy);
             }
@@ -122,6 +133,7 @@ public class StorybookServiceImpl implements StorybookService {
         }
     }
 
+    @Override
     @Transactional
     public boolean deleteStorybookById(UUID id) {
         if(storybookRepository.existsById(id)) {
@@ -133,7 +145,7 @@ public class StorybookServiceImpl implements StorybookService {
         }
     }
 
-    private StorybookDTO convertToDto(Storybook storybook) {
+    private StorybookDTO convertToDTO(Storybook storybook) {
         StorybookDTO storybookDTO = modelMapper.map(storybook, StorybookDTO.class);
         List<GenreDTO> genreDTOs = storybook.getGenres().stream()
                 .map(genre -> modelMapper.map(genre, GenreDTO.class))

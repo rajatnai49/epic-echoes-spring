@@ -2,11 +2,8 @@ package com.epic_echoes.epic_echoes.controllers;
 
 import com.epic_echoes.epic_echoes.dto.ChapterDTO;
 import com.epic_echoes.epic_echoes.dto.StorybookDTO;
-import com.epic_echoes.epic_echoes.dto.StorybookUserPermissionDTO;
 import com.epic_echoes.epic_echoes.entities.Genre;
-import com.epic_echoes.epic_echoes.services.GenreServiceImpl;
-import com.epic_echoes.epic_echoes.services.StorybookServiceImpl;
-import com.epic_echoes.epic_echoes.services.StorybookUserPermissionServiceImpl;
+import com.epic_echoes.epic_echoes.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +16,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/storybooks")
 public class StorybookController {
 
-    private final StorybookServiceImpl storybookService;
-    private final GenreServiceImpl genreService;
-    private final StorybookUserPermissionServiceImpl permissionService;
+    private final StorybookService storybookService;
+    private final GenreService genreService;
+    private final StorybookUserPermissionService permissionService;
 
     @Autowired
-    public StorybookController(StorybookServiceImpl storybookService, GenreServiceImpl genreService, StorybookUserPermissionServiceImpl permissionService) {
+    public StorybookController(StorybookService storybookService, GenreService genreService, StorybookUserPermissionService permissionService) {
         this.storybookService = storybookService;
         this.genreService = genreService;
         this.permissionService = permissionService;
@@ -54,6 +51,13 @@ public class StorybookController {
         return ResponseEntity.ok(storybooks);
     }
 
+    @GetMapping("/filterByPrivacy")
+    public ResponseEntity<List<StorybookDTO>> filterStorybooksBasedOnPrivacy(
+            @RequestParam UUID userId,
+            @RequestParam(required = false) String privacy) {
+        List<StorybookDTO> storybooks = permissionService.filterStorybooksBasedOnPrivacy(userId, privacy);
+        return ResponseEntity.ok(storybooks);
+    }
 
     @PostMapping("/GetStorybooksByGenres")
     public ResponseEntity<List<StorybookDTO>> getStorybooksByGenres(@RequestBody List<String> genreNames) {
@@ -74,12 +78,6 @@ public class StorybookController {
     public ResponseEntity<StorybookDTO> updateStorybook(@PathVariable UUID id, @RequestBody StorybookDTO storybookDTO) {
         StorybookDTO updatedStorybook = storybookService.updateStorybook(id, storybookDTO);
         return ResponseEntity.ok(updatedStorybook);
-    }
-
-    @PutMapping("/{id}/permissions")
-    public ResponseEntity<StorybookUserPermissionDTO> updatePermission(@PathVariable UUID id, @RequestBody StorybookUserPermissionDTO permissionDTO) {
-        StorybookUserPermissionDTO updatedPermission = permissionService.updatePermission(id, permissionDTO);
-        return ResponseEntity.ok(updatedPermission);
     }
 
     @PatchMapping("/{id}/privacy")

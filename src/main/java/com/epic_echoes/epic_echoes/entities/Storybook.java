@@ -34,7 +34,7 @@ public class Storybook {
     @OrderBy("chapterNumber ASC")
     private List<Chapter> chapters;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserInfo user;
 
@@ -51,6 +51,9 @@ public class Storybook {
             inverseJoinColumns = @JoinColumn(name = "genre_id")
     )
     private List<Genre> genres;
+
+    @OneToMany(mappedBy = "storybook", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<StorybookRating> ratings;
 
     public enum Privacy {
         EVERYONE_VIEW, // Everyone can see

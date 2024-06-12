@@ -15,4 +15,10 @@ public interface StorybookRepository extends JpaRepository<Storybook, UUID> {
 
     @Query("SELECT s FROM Storybook s JOIN s.genres g WHERE g.id IN :genreIds")
     List<Storybook> findByGenres(@Param("genreIds") List<UUID> genreIds);
+
+    @Query("SELECT s FROM Storybook s WHERE s.privacy = :privacy OR s.privacy = 'EVERYONE_VIEW' OR s.privacy = 'EVERYONE_EDIT' OR s.id IN (SELECT p.storybook.id FROM StorybookUserPermission p WHERE p.user.id = :userId)")
+    List<Storybook> findStorybooksByUserAndPrivacy(@Param("userId") UUID userId, @Param("privacy") Storybook.Privacy privacy);
+
+    @Query("SELECT s FROM Storybook s WHERE s.privacy = 'EVERYONE_VIEW' OR s.privacy = 'EVERYONE_EDIT' OR s.id IN (SELECT p.storybook.id FROM StorybookUserPermission p WHERE p.user.id = :userId)")
+    List<Storybook> findStorybooksByUser(@Param("userId") UUID userId);
 }

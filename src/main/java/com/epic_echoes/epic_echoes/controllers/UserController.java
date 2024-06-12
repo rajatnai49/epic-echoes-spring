@@ -2,9 +2,7 @@ package com.epic_echoes.epic_echoes.controllers;
 
 import com.epic_echoes.epic_echoes.dto.*;
 import com.epic_echoes.epic_echoes.entities.RefreshToken;
-import com.epic_echoes.epic_echoes.services.JwtService;
-import com.epic_echoes.epic_echoes.services.RefreshTokenService;
-import com.epic_echoes.epic_echoes.services.UserService;
+import com.epic_echoes.epic_echoes.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,22 +12,25 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
 public class UserController {
 
-    @Autowired
-    UserService userService;
+    private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
+    private final StorybookUserPermissionService permissionService;
 
-    @Autowired
-    private JwtService jwtService;
-
-    @Autowired
-    RefreshTokenService refreshTokenService;
-
-    @Autowired
-    private  AuthenticationManager authenticationManager;
+    public UserController(UserService userService, AuthenticationManager authenticationManager, JwtService jwtService, RefreshTokenService refreshTokenService, StorybookUserPermissionService permissionService) {
+        this.userService = userService;
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
+        this.permissionService = permissionService;
+    }
 
     @PostMapping(value = "/save")
     public ResponseEntity saveUser(@RequestBody UserRequest userRequest) {
@@ -51,6 +52,13 @@ public class UserController {
         }
     }
 
+    @GetMapping("/users/filterByPrivacy")
+    public ResponseEntity<List<UserResponse>> filterUsersBasedOnPrivacy(
+            @RequestParam UUID storybookId,
+            @RequestParam(required = false) String privacy) {
+        List<UserResponse> users = permissionService.filterUsersBasedOnPrivacy(storybookId, privacy);
+        return ResponseEntity.ok(users);
+    }
 
     @GetMapping("/profile")
     public ResponseEntity<UserResponse> getUserProfile() {
@@ -99,7 +107,6 @@ public class UserController {
         }
     }
 
-
     @PostMapping("/refreshToken")
     public JwtResponseDTO refreshToken(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO){
         String token = refreshTokenRequestDTO.getToken().trim();
@@ -115,8 +122,4 @@ public class UserController {
                             .token(token).build();
                 }).orElseThrow(() -> new RuntimeException("Refresh Token is not in DB..!!"));
     }
-
-
-
-
 }

@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface GenreService {
     List<Genre> findOrCreateGenres(List<GenreDTO> genreDTOs);
+    List<Genre> findGenresByName(List<String> genreNames);
+    Genre findOrCreateGenre(GenreDTO genreDTO);
 }

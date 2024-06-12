@@ -1,8 +1,14 @@
 package com.epic_echoes.epic_echoes.services;
 
+import com.epic_echoes.epic_echoes.dto.StorybookDTO;
 import com.epic_echoes.epic_echoes.dto.StorybookUserPermissionDTO;
+import com.epic_echoes.epic_echoes.dto.UserResponse;
+import com.epic_echoes.epic_echoes.entities.Storybook;
 import com.epic_echoes.epic_echoes.entities.StorybookUserPermission;
+import com.epic_echoes.epic_echoes.entities.UserInfo;
+import com.epic_echoes.epic_echoes.repositories.StorybookRepository;
 import com.epic_echoes.epic_echoes.repositories.StorybookUserPermissionRepository;
+import com.epic_echoes.epic_echoes.repositories.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,11 +22,15 @@ import java.util.stream.Collectors;
 public class StorybookUserPermissionServiceImpl implements StorybookUserPermissionService {
 
     private final StorybookUserPermissionRepository permissionRepository;
+    private final StorybookRepository storybookRepository;
+    private final UserRepository userRepository;
     private final ModelMapper modelMapper;
 
     @Autowired
-    public StorybookUserPermissionServiceImpl(StorybookUserPermissionRepository permissionRepository, ModelMapper modelMapper) {
+    public StorybookUserPermissionServiceImpl(StorybookUserPermissionRepository permissionRepository, StorybookRepository storybookRepository, UserRepository userRepository, ModelMapper modelMapper) {
         this.permissionRepository = permissionRepository;
+        this.storybookRepository = storybookRepository;
+        this.userRepository = userRepository;
         this.modelMapper = modelMapper;
     }
 
@@ -50,6 +60,36 @@ public class StorybookUserPermissionServiceImpl implements StorybookUserPermissi
         modelMapper.map(permissionDTO, existingPermission);
         StorybookUserPermission updatedPermission = permissionRepository.save(existingPermission);
         return modelMapper.map(updatedPermission, StorybookUserPermissionDTO.class);
+    }
+
+    @Override
+    public List<StorybookDTO> filterStorybooksBasedOnPrivacy(UUID userId, String privacy) {
+        List<Storybook> filteredStorybooks;
+        if (privacy == null || privacy.isEmpty()) {
+            filteredStorybooks = storybookRepository.findByUserId(userId);
+        }
+        else {
+            Storybook.Privacy privacyEnum = Storybook.Privacy.valueOf(privacy);
+            filteredStorybooks = storybookRepository.findStorybooksByUserAndPrivacy(userId, privacyEnum);
+        }
+        return filteredStorybooks.stream()
+                .map(storybook -> modelMapper.map(storybook, StorybookDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserResponse> filterUsersBasedOnPrivacy(UUID storybookId, String privacy) {
+        List<UserInfo> filteredUsers;
+        if (privacy == null || privacy.isEmpty()) {
+            filteredUsers = userRepository.findUsersByStorybook(storybookId);
+        }
+        else {
+            Storybook.Privacy privacyEnum = Storybook.Privacy.valueOf(privacy);
+            filteredUsers = userRepository.findUsersByStorybookAndPrivacy(storybookId, privacyEnum);
+        }
+        return filteredUsers.stream()
+                .map(user -> modelMapper.map(user, UserResponse.class))
+                .collect(Collectors.toList());
     }
 
     @Transactional
