@@ -38,6 +38,7 @@ public class StorybookServiceImpl implements StorybookService {
     @Transactional(readOnly = true)
     public List<StorybookDTO> getAllStorybooks() {
         List<Storybook> storybooks = storybookRepository.findAll();
+        System.out.println(storybooks);
         return storybooks.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -82,15 +83,16 @@ public class StorybookServiceImpl implements StorybookService {
         if (storybook == null) {
             throw new IllegalArgumentException("Converted Storybook entity cannot be null");
         }
-        System.out.println(storybook);
+
         UserInfo user = userRepository.findById(storybookDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         storybook.setUser(user);
         Storybook savedStorybook = storybookRepository.save(storybook);
-        System.out.println(savedStorybook);
+        if (savedStorybook == null) {
+            throw new RuntimeException("Failed to save storybook");
+        }
         return convertToDTO(savedStorybook);
     }
-
 
     @Override
     @Transactional
@@ -110,6 +112,10 @@ public class StorybookServiceImpl implements StorybookService {
         existingStorybook.setGenres(genres);
 
         Storybook updatedStorybook = storybookRepository.save(existingStorybook);
+
+        if (updatedStorybook == null) {
+            throw new RuntimeException("Failed to update storybook");
+        }
         return convertToDTO(updatedStorybook);
     }
 

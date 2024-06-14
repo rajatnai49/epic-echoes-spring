@@ -24,16 +24,16 @@ public class GenreServiceImpl implements GenreService {
     }
 
     @Override
+    public List<Genre> findGenresByName(List<String> genreNames) {
+        List<String> lowerCaseNames = genreNames.stream().map(String::toLowerCase).collect(Collectors.toList());
+        return genreRepository.findByNameIn(lowerCaseNames);
+    }
+
+    @Override
     public List<Genre> findOrCreateGenres(List<GenreDTO> genreDTOs) {
         return genreDTOs.stream()
                 .map(this::findOrCreateGenre)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<Genre> findGenresByName(List<String> genreNames) {
-        List<String> lowerCaseNames = genreNames.stream().map(String::toLowerCase).collect(Collectors.toList());
-        return genreRepository.findByNameIn(lowerCaseNames);
     }
 
     @Override

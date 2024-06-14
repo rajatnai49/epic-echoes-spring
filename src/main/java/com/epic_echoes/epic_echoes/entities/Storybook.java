@@ -34,9 +34,11 @@ public class Storybook {
     @OrderBy("chapterNumber ASC")
     private List<Chapter> chapters;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserInfo user;
+
 
     @Enumerated(EnumType.STRING)
     private Privacy privacy;
@@ -56,9 +58,17 @@ public class Storybook {
     private List<StorybookRating> ratings;
 
     public enum Privacy {
-        EVERYONE_VIEW, // Everyone can see
-        PERMITTED_USERS_VIEW, // Only permitted users can see
-        EVERYONE_EDIT, // Everyone can see and edit
-        PERMITTED_USERS_EDIT // Everyone can see, but only permitted users can edit
+        EVERYONE_VIEW,
+        PERMITTED_USERS_VIEW,
+        EVERYONE_EDIT,
+        PERMITTED_USERS_EDIT
+    }
+
+    @Override
+    public String toString() {
+        return "Storybook{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

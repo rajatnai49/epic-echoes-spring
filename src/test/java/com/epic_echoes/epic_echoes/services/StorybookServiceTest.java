@@ -9,24 +9,24 @@ import com.epic_echoes.epic_echoes.repositories.StorybookRepository;
 import com.epic_echoes.epic_echoes.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
+@ActiveProfiles("test")
 public class StorybookServiceTest {
 
     private StorybookRepository storybookRepository;
     private UserRepository userRepository;
     private GenreService genreService;
     private ModelMapper modelMapper;
-    private StorybookServiceImpl storybookService;
+    private StorybookService storybookService;
 
     private UserInfo user;
     private Genre genre;
@@ -97,15 +97,18 @@ public class StorybookServiceTest {
         storybookDTO.setName("New Storybook");
         storybookDTO.setUserId(user.getId());
         storybookDTO.setGenres(List.of(new GenreDTO(UUID.randomUUID(), "Fantasy")));
-        storybookDTO.setPlot("Test plot of the storybook.");
-        storybookDTO.setMaxChapterLength(1000l);
-        storybookDTO.setMinChapterLength(100l);
-        storybookDTO.setPrivacy(String.valueOf(Storybook.Privacy.EVERYONE_EDIT));
+
+        when(storybookRepository.save(any(Storybook.class))).thenAnswer(invocation -> {
+            Storybook savedStorybook = invocation.getArgument(0);
+            savedStorybook.setId(UUID.randomUUID());
+            return savedStorybook;
+        });
 
         StorybookDTO createdStorybook = storybookService.createStorybook(storybookDTO);
         assertThat(createdStorybook.getName()).isEqualTo("New Storybook");
         verify(storybookRepository, times(1)).save(any(Storybook.class));
     }
+
 
     @Test
     void testUpdateStorybook() {
@@ -114,6 +117,12 @@ public class StorybookServiceTest {
         storybookDTO.setName("Updated Storybook");
         storybookDTO.setUserId(user.getId());
         storybookDTO.setGenres(List.of(new GenreDTO(UUID.randomUUID(), "Fantasy")));
+
+        when(storybookRepository.save(any(Storybook.class))).thenAnswer(invocation -> {
+            Storybook savedStorybook = invocation.getArgument(0);
+            savedStorybook.setId(UUID.randomUUID());
+            return savedStorybook;
+        });
 
         StorybookDTO updatedStorybook = storybookService.updateStorybook(storybook.getId(), storybookDTO);
         assertThat(updatedStorybook.getName()).isEqualTo("Updated Storybook");
