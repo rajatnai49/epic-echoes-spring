@@ -1,0 +1,5 @@
+user_query = "SELECT id, username FROM users"
+storybook_query = "SELECT id, name, plot, min_chapter_length, max_chapter_length FROM storybook"
+rating_query = "SELECT id, user_id, storybook_id, rating FROM storybook_rating"
+genre_query = "SELECT id, name FROM genre"
+preference_query = "SELECT id, user_id, genre_id FROM user_preference"
