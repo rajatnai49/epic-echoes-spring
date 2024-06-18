@@ -5,12 +5,14 @@ import com.epic_echoes.epic_echoes.entities.StorybookRating;
 import com.epic_echoes.epic_echoes.repositories.StorybookRatingRepository;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Service
 public class StorybookRatingServiceImpl implements StorybookRatingService {
 
     private final StorybookRatingRepository storybookRatingRepository;
