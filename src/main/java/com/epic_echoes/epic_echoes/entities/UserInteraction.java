@@ -27,5 +27,20 @@ public class UserInteraction {
     private Storybook storybook;
 
     private LocalDateTime interactionTime;
-    private String interactionType;
+
+    @Enumerated(EnumType.STRING)
+    private InteractionType interactionType;
+
+    public enum InteractionType {
+        VIEW,
+        LIKE,
+        COMMENT,
+        SHARE,
+        RATE,
+        BOOKMARK,
+        DOWNLOAD,
+        START_READING,
+        FINISH_READING,
+        FOLLOW
+    }
 }
